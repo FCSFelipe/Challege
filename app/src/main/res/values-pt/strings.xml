@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nova_ideia">Nova ideia</string>
+    <string name="descreva_o_problema">Descreva o problema</string>
+    <string name="titulo_da_ideia">Título da ideia</string>
+    <string name="descreva_a_solucao">Descreva a solução</string>
+    <string name="salvar">Salvar</string>
+    <string name="aprovar_e_criar_projeto">Aprovar e Criar Projeto</string>
+    <string name="ideia_original">Ideia Original:</string>
+    <string name="defina_os_parametros_de_execucao_deste_projeto">Defina os parâmetros de execução deste projeto:</string>
+    <string name="projeto_iniciado_com_sucesso">Projeto iniciado com sucesso!</string>
+    <string name="confirmar_inicio_do_projeto">Confirmar Início do Projeto</string>
+</resources>
