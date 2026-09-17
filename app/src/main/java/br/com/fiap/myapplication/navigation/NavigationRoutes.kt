@@ -15,7 +15,7 @@ import br.com.fiap.myapplication.screens.SignupScreen
 import java.net.URLDecoder
 import br.com.fiap.myapplication.screens.IdeaListScreen
 import br.com.fiap.myapplication.screens.ProfileScreen
-import br.com.fiap.myapplication.screens.ProjectManagementScreen
+import br.com.fiap.myapplication.screens.manager.ProjectManagementScreen
 
 @Composable
 fun AppNavigation(

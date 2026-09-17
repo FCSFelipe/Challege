@@ -1,7 +1,9 @@
 package br.com.fiap.myapplication.screens.manager
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,21 +11,26 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.AccountTree
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import br.com.fiap.myapplication.R
 import br.com.fiap.myapplication.components.BottomMenu
 import br.com.fiap.myapplication.viewmodel.StrategyViewModel
 
@@ -39,8 +46,6 @@ fun ManageStrategyScreen(
     var searchText by remember { mutableStateOf("") }
     var showCreateDialog by remember { mutableStateOf(false) }
     var estrategiaEditando by remember { mutableStateOf<Map<String, Any>?>(null) }
-
-    // 1. Variável de estado para controlar a exibição do pop-up de exclusão
     var estrategiaParaExcluir by remember { mutableStateOf<String?>(null) }
 
     val estrategiasFiltradas = estrategias.filter {
@@ -50,13 +55,39 @@ fun ManageStrategyScreen(
     }
 
     Scaffold(
+        topBar = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primary)
+                    .statusBarsPadding()
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.logotipo),
+                    contentDescription = null,
+                    modifier = Modifier.height(36.dp)
+                )
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                )
+            }
+        },
         bottomBar = { BottomMenu(navController = navController) },
         floatingActionButton = {
             if (podeEditar) {
                 FloatingActionButton(
                     onClick = { showCreateDialog = true },
                     containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = Color.White
+                    contentColor = Color.White,
+                    shape = CircleShape
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "Nova Estratégia")
                 }
@@ -67,9 +98,8 @@ fun ManageStrategyScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color.White)
-                .padding(horizontal = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .background(Color(0xFFF8F9FA))
+                .padding(horizontal = 24.dp)
         ) {
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -80,13 +110,15 @@ fun ManageStrategyScreen(
                 color = MaterialTheme.colorScheme.primary
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             TextField(
                 value = searchText,
                 onValueChange = { searchText = it },
                 placeholder = { Text("Buscar estratégia", color = Color.Gray) },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
                 shape = RoundedCornerShape(28.dp),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFFF5F6F8),
@@ -95,29 +127,33 @@ fun ManageStrategyScreen(
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
                 ),
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.LightGray) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
                 singleLine = true
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
             if (isLoading) {
-                CircularProgressIndicator()
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
             } else if (estrategiasFiltradas.isEmpty()) {
                 Text("Nenhuma estratégia encontrada.", color = Color.Gray)
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(estrategiasFiltradas) { estrategia ->
                         StrategyListItem(
                             estrategia = estrategia,
                             podeEditar = podeEditar,
                             onEditarClick = { estrategiaEditando = estrategia },
-                            // 2. Aciona a abertura do pop-up guardando o ID
                             onExcluirClick = { id -> estrategiaParaExcluir = id }
                         )
+                    }
+                    item {
+                        Spacer(modifier = Modifier.height(80.dp))
                     }
                 }
             }
@@ -147,9 +183,6 @@ fun ManageStrategyScreen(
             )
         }
 
-        // =========================================================
-        // 3. POP-UP DE CONFIRMAÇÃO DE EXCLUSÃO
-        // =========================================================
         estrategiaParaExcluir?.let { idParaDeletar ->
             AlertDialog(
                 onDismissRequest = { estrategiaParaExcluir = null },
@@ -157,7 +190,7 @@ fun ManageStrategyScreen(
                     Text(
                         text = "Excluir Estratégia?",
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFF44336) // Vermelho alerta
+                        color = Color(0xFFF44336)
                     )
                 },
                 text = {
@@ -169,8 +202,8 @@ fun ManageStrategyScreen(
                 confirmButton = {
                     Button(
                         onClick = {
-                            viewModel.excluirEstrategia(idParaDeletar) // Exclui no Firebase
-                            estrategiaParaExcluir = null // Fecha o modal
+                            viewModel.excluirEstrategia(idParaDeletar)
+                            estrategiaParaExcluir = null
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF44336))
                     ) {
@@ -239,69 +272,124 @@ fun StrategyListItem(
 
     var expanded by remember { mutableStateOf(false) }
 
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.Top) {
-            Box(
-                modifier = Modifier.size(48.dp).background(Color(0xFFF5F6F8), CircleShape),
-                contentAlignment = Alignment.Center
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(Icons.Default.Star, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                Box(
+                    modifier = Modifier
+                        .size(60.dp)
+                        .background(Color(0xFFF0F5FF), RoundedCornerShape(12.dp)),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(text = titulo, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, modifier = Modifier.weight(1f))
+                    Icon(
+                        imageVector = Icons.Outlined.AccountTree,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
 
-                    if (podeEditar) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            IconButton(onClick = onEditarClick, modifier = Modifier.size(28.dp)) {
-                                Icon(Icons.Default.Edit, contentDescription = "Editar", tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f), modifier = Modifier.size(20.dp))
-                            }
-                            IconButton(onClick = { onExcluirClick(id) }, modifier = Modifier.size(28.dp)) {
-                                Icon(Icons.Default.Delete, contentDescription = "Excluir", tint = Color.Red.copy(alpha = 0.7f), modifier = Modifier.size(20.dp))
-                            }
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = titulo,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = depto,
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                }
+
+                if (podeEditar) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .border(1.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                                .clickable { onEditarClick() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Edit,
+                                contentDescription = "Editar",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .border(1.dp, Color(0xFFF44336), CircleShape)
+                                .clickable { onExcluirClick(id) },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Delete,
+                                contentDescription = "Excluir",
+                                tint = Color(0xFFF44336),
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
                     }
                 }
+            }
 
-                Spacer(modifier = Modifier.height(6.dp))
-                StrategyDetailRow("Depto:", depto)
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+            HorizontalDivider(color = Color(0xFFF0F0F0), thickness = 1.dp)
+            Spacer(modifier = Modifier.height(16.dp))
 
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable { expanded = !expanded }
+            ) {
                 Text(
                     text = if (expanded) "Ocultar detalhes" else "Ver detalhes",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable { expanded = !expanded }
+                    color = MaterialTheme.colorScheme.primary
                 )
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
 
-                AnimatedVisibility(visible = expanded) {
-                    Column {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Box(modifier = Modifier.fillMaxWidth().background(Color(0xFFF5F6F8), RoundedCornerShape(8.dp)).padding(12.dp)) {
-                            Text(text = textoCompleto, fontSize = 14.sp, color = Color.DarkGray, lineHeight = 20.sp)
-                        }
+            AnimatedVisibility(visible = expanded) {
+                Column {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFFF8F9FA), RoundedCornerShape(8.dp))
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = textoCompleto,
+                            fontSize = 14.sp,
+                            color = Color.DarkGray,
+                            lineHeight = 20.sp
+                        )
                     }
                 }
             }
         }
-        Spacer(modifier = Modifier.height(16.dp))
-        HorizontalDivider(color = Color(0xFFEBEBEB), thickness = 1.dp)
-    }
-}
-
-@Composable
-fun StrategyDetailRow(label: String, value: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text("• ", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-        Text(text = "$label ", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-        Text(text = value, fontSize = 14.sp, color = Color.DarkGray)
     }
 }

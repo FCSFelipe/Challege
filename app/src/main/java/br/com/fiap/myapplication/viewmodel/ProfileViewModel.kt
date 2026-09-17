@@ -20,6 +20,9 @@ class ProfileViewModel : ViewModel() {
     private val _telefone = mutableStateOf("")
     val telefone: State<String> = _telefone
 
+    private val _email = mutableStateOf(auth.currentUser?.email ?: "")
+    val email: State<String> = _email
+
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
 
